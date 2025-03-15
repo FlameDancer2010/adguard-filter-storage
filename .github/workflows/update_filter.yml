@@ -13,11 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install sing-box
+      - name: Get latest sing-box version
         run: |
-          wget -qO- https://github.com/SagerNet/sing-box/releases/latest/download/sing-box-linux-amd64.tar.gz | tar xz
-          chmod +x sing-box
-          sudo mv sing-box /usr/local/bin/sing-box
+          VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name')
+          CLEAN_VERSION=${VERSION#v}
+          echo "SING_BOX_VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
+
+      - name: Download and install sing-box
+        run: |
+          wget -qO sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${CLEAN_VERSION}-linux-amd64.tar.gz"
+          tar -xzf sing-box.tar.gz
+          chmod +x sing-box-${CLEAN_VERSION}-linux-amd64/sing-box
+          sudo mv sing-box-${CLEAN_VERSION}-linux-amd64/sing-box /usr/local/bin/sing-box
 
       - name: Download and Convert Filter
         run: |
@@ -32,4 +40,3 @@ jobs:
           git add filter.srs
           git commit -m "Update filter.srs on $(date -u)" || exit 0
           git push
-
