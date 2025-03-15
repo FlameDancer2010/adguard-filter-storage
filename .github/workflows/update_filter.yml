@@ -1,0 +1,35 @@
+name: Update Filter
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install sing-box
+        run: |
+          wget -qO- https://github.com/SagerNet/sing-box/releases/latest/download/sing-box-linux-amd64.tar.gz | tar xz
+          chmod +x sing-box
+          sudo mv sing-box /usr/local/bin/sing-box
+
+      - name: Download and Convert Filter
+        run: |
+          curl -sSLo filter.txt "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+          sing-box rule-set convert --type adguard --output filter.srs filter.txt
+          rm filter.txt
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add filter.srs
+          git commit -m "Update filter.srs on $(date -u)" || exit 0
+          git push
+
