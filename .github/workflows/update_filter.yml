@@ -36,12 +36,9 @@ jobs:
           rm filter.txt
 
       - name: Commit and Push Changes
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add filter.srs
           git commit -m "Update filter.srs on $(date -u)" || exit 0
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/FlameDancer2010/adguard-filter-storage.git
-          git push origin HEAD:main
+          git push
